@@ -1,0 +1,65 @@
+﻿@using MVCExample.Models
+@model MVCExample.Models.EmployeesByCompanyPickerViewModel[]
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index2</h2>
+
+<table>
+    <tr>
+        <td>Company:</td>
+        <td><select id="company"></select></td>
+    </tr>
+    <tr>
+        <td>Employee</td>
+        <td><select id="employee"></select></td>
+    </tr>
+</table>
+
+@section Scripts
+{
+    <script>
+        var companyData = @Html.Raw(@Model.AsJson());
+
+        $(document).ready(function () {
+
+            debugger;
+
+            var $company = $('#company');
+            var $employee = $('#employee');
+
+            function buildOption(key, val) {
+                return $('<option></option>').attr('value', val).text(key);
+            }
+
+            // setup company list
+            $company.empty();
+            $company.append('<option></option>');
+            $.each(companyData, function (idx, company) {
+                $company.append(buildOption(company.name, company.id));
+            });
+
+            // setup company-changed handler
+            $company.change(companyChanged);
+
+            function companyChanged() {
+                var selectedCompany = $company.find("option:selected").text();
+
+                var availableEmployees = (selectedCompany == "")
+                    ? $.map(companyData, function (c) { return c.employees; })
+                    : companyData.filter(function (c) { return c.name == selectedCompany; })[0].employees;
+
+                $employee.empty();
+                $employee.append('<option></option>');
+                $.each(availableEmployees, function (idx, employee) {
+                    $employee.append(buildOption(employee.name, employee.id));
+                });
+            }
+
+            // trigger change event to load initial employee list
+            $company.change();
+        });
+    </script>
+}
